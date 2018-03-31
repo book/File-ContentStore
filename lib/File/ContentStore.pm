@@ -1,8 +1,11 @@
 package File::ContentStore;
 
+use 5.014;
+
 use Carp qw( croak );
-use Types::Standard qw( Str );
+use Types::Standard qw( slurpy Object Str ArrayRef );
 use Types::Path::Tiny qw( Dir File );
+use Type::Params qw( compile );
 use Digest;
 
 use Moo;
@@ -32,8 +35,8 @@ my $BUFF_SIZE = 1024 * 32;
 my $DIGEST_OPTS = { chunk_size => $BUFF_SIZE };
 
 sub link_file {
-    my ($self, $file) = @_;
-    $file = Path::Tiny->new($file);
+    state $check = compile( Object, File );
+    my ( $self, $file ) = $check->(@_);
 
     # compute content file name
     my $digest = $file->digest( $DIGEST_OPTS, $self->digest );
@@ -55,10 +58,11 @@ sub link_file {
 }
 
 sub link_dir {
-    my ( $self, @dirs ) = @_;
+    state $check = compile( Object, slurpy ArrayRef[Dir] );
+    my ( $self, $dirs ) = $check->(@_);
 
     $_->visit( sub { $self->link_file($_) }, { recurse => 1 } )
-      for map Path::Tiny->new($_), @dirs;
+      for @$dirs;
 }
 
 1;
