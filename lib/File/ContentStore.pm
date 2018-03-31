@@ -1,7 +1,7 @@
 package File::ContentStore;
 
 use Carp qw( croak );
-use Path::Tiny;
+use Types::Path::Tiny qw( Dir File );
 use Digest;
 
 use Moo;
@@ -9,8 +9,9 @@ use namespace::clean;
 
 has path => (
     is       => 'ro',
+    isa      => Dir,
     required => 1,
-    coerce   => sub { Path::Tiny->new( shift ) },
+    coerce   => 1,
 );
 
 has digest => (
