@@ -31,6 +31,19 @@ has parts => (
     init_arg => undef,
 );
 
+# if a single non-hashref argument is given, assume it's 'path'
+sub BUILDARGS {
+    my $class = shift;
+    scalar @_ == 1
+      ? ref $_[0] eq 'HASH'
+          ? { %{ $_[0] } }
+          : { path => $_[0] }
+      : @_ % 2 ? Carp::croak(
+            "The new() method for $class expects a hash reference or a"
+          . " key/value list. You passed an odd number of arguments" )
+      : {@_};
+}
+
 my $BUFF_SIZE = 1024 * 32;
 my $DIGEST_OPTS = { chunk_size => $BUFF_SIZE };
 
