@@ -54,4 +54,11 @@ sub link_file {
     return $content;
 }
 
+sub link_dir {
+    my ( $self, @dirs ) = @_;
+
+    $_->visit( sub { $self->link_file($_) }, { recurse => 1 } )
+      for map Path::Tiny->new($_), @dirs;
+}
+
 1;
