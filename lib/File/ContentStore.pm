@@ -1,6 +1,7 @@
 package File::ContentStore;
 
 use Carp qw( croak );
+use Types::Standard qw( Str );
 use Types::Path::Tiny qw( Dir File );
 use Digest;
 
@@ -16,6 +17,7 @@ has path => (
 
 has digest => (
     is      => 'ro',
+    isa     => Str,
     default => 'SHA-1',
 );
 
