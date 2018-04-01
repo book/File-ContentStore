@@ -74,7 +74,7 @@ sub link_dir {
     state $check = compile( Object, slurpy ArrayRef[Dir] );
     my ( $self, $dirs ) = $check->(@_);
 
-    $_->visit( sub { $self->link_file($_) }, { recurse => 1 } )
+    $_->visit( sub { $self->link_file($_) if -f }, { recurse => 1 } )
       for @$dirs;
 }
 
