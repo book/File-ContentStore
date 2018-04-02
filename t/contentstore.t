@@ -95,4 +95,22 @@ is_deeply(
     'fsck, 1 empty, 1 orphan, 1 corrupted'
 );
 
+# test collisions
+%dir = build_work_tree( << 'TREE' );
+md5-1
+md5-2 subdir/md5-2
+TREE
+
+my $md5_store = File::ContentStore->new(
+    path   => $dir{obj},
+    digest => 'MD5',
+);
+
+ok( !eval { $md5_store->link_dir($dir{src}); 1; }, 'link_dir failed' );
+like(
+    $@,
+    qr{^Collision found for $dir{src}/subdir/md5-2 and ${\$md5_store->path}/00/8ee33a9d58b51cfeb425b0959121c9: content differs },
+    '... on an MD5 collision'
+);
+
 done_testing;

@@ -59,6 +59,20 @@ sub link_file {
         substr( $digest, 2 * $self->parts ) );
     $content->parent->mkpath;
 
+    # check for collisions
+    if( -e $content ) {
+        croak "Collision found for $file and $content: size differs"
+           if -s $file != -s $content;
+
+        my @buf;
+        my @fh = map $_->openr_raw, $file, $content;
+        while( $fh[0]->sysread( $buf[0], $BUFF_SIZE ) ) {
+            $fh[1]->sysread( $buf[1], $BUFF_SIZE );
+            croak "Collision found for $file and $content: content differs"
+                 if $buf[0] ne $buf[1];
+        }
+    }
+
     # link both files
     my ( $old, $new ) = -e $content ? ( $content, $file ) : ( $file, $content );
 
