@@ -78,4 +78,31 @@ sub link_dir {
       for @$dirs;
 }
 
+sub fsck {
+    my ($self) = @_;
+    $self->path->visit(
+        sub {
+            my ( $path, $state ) = @_;
+
+            if ( -d $path ) {
+
+                # empty directory
+                push @{ $state->{empty} }, $path unless $path->children;
+            }
+            else {
+
+                # orphan content file
+                push @{ $state->{orphan} }, $path
+                  if $path->stat->nlink == 1;
+
+                # content does not match name
+                my $digest = $path->digest( $DIGEST_OPTS, $self->digest );
+                push @{ $state->{corrupted} }, $path
+                  if $digest ne $path->relative( $self->path ) =~ s{/}{}gr;
+            }
+        },
+        { recurse => 1 },
+    );
+}
+
 1;

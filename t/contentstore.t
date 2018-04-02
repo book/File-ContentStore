@@ -56,4 +56,43 @@ is(
     "img-01.jpg and img-02.jpg are linked"
 );
 
+# fsck
+is_deeply( $store->fsck, {}, 'fsck' );
+
+# fsck errors
+unlink $dir{src}->child('IMG_0025.JPG');    # orphan file
+$store->path->child( '01', '23' )->mkpath;
+rename(                                     # corrupted + empty dir
+    $store->path->child(
+        'f7', '7a',
+        '5294e550ee91c030e4d76da836961175f33f8382e0827919530f382665d4'
+    ),
+    $store->path->child(
+        '01', '23',
+        '456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+    )
+);
+
+is_deeply(
+    $store->fsck,
+    {
+        empty  => [ $store->path->child( 'f7', '7a' ) ],
+        orphan => [
+            $store->path->child(
+                '10',
+                '31',
+                '525d736cbf09471f420b2ec762ac30ce50b78aa4dea3374596d2ad8906ee'
+            )
+        ],
+        corrupted => [
+            $store->path->child(
+                '01',
+                '23',
+                '456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+            )
+        ],
+    },
+    'fsck, 1 empty, 1 orphan, 1 corrupted'
+);
+
 done_testing;
