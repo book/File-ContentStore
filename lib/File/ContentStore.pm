@@ -150,6 +150,52 @@ to the file, named after the digest of the content. When a file which
 content is already in the store is linked in, the file is hard linked
 to the content file in the store.
 
+=head2 Example and detailed operation
+
+For a more complete definition of a hard link, see
+L<https://en.wikipedia.org/wiki/Hard_link>.
+
+Assuming we have directory containing the following files: F<file1>
+(inode 123456), F<file2> (inode 456789) and F<file3> (inode 789012,
+content identical to F<file1>). In the examples below, files are
+sorted by inode.
+
+After linking F<file1> into the content store, we have the following:
+
+    Directory                Content store
+    ---------                -------------
+    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
+    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+    [789012] file3
+
+After linking F<file2>:
+
+    Directory                Content store
+    ---------                -------------
+    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
+    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+    [789012] file3
+
+And finally, after linking F<file3>, we have this:
+
+    Directory                Content store
+    ---------                -------------
+    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
+    [123456] file3
+    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+
+i.e. the inode that was holding the content of F<file3> is lost, and the
+name now points to the same inode as F<file1> and its content file.
+
+F<file1> and F<file3> are now hard linked (or aliased) together, so any
+change done to one of them will in fact be done to both. Note also that
+the disk space taken by duplicated extra files is regained when they
+are linked through the content store.
+
+If the goal is deduplication and hard-linking of identical files, once
+all the files have been linked through the content store, the content
+store is not needed any more, and can be deleted.
+
 =head1 ATTRIBUTES
 
 =head2 path
