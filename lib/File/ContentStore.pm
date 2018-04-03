@@ -150,6 +150,39 @@ to the file, named after the digest of the content. When a file which
 content is already in the store is linked in, the file is hard linked
 to the content file in the store.
 
+=head1 ATTRIBUTES
+
+=head2 path
+
+The location of the directory where the content files are store.
+
+=head2 digest
+
+The algorithm used to compute the content digest (default: C<SHA-1>).
+
+Any string that is suitable for passing to the L<Digest> module
+constructor is valid. The choice of a digest is a compromise between
+speed and risk of collisions.
+
+=head2 parts
+
+This internal attribute describes in how many parts (i.e. sub-directories)
+the content filename is split. It is computed automatically from L<digest>.
+
+For example, the empty file would be linked to:
+
+    # digest = MD4, parts = 1
+    31/d6cfe0d16ae931b73c59d7e0c089c0
+
+    # digest = MD5, parts = 1
+    d4/1d8cd98f00b204e9800998ecf8427e
+
+    # digest = SHA-1, parts = 1
+    da/39a3ee5e6b4b0d3255bfef95601890afd80709
+
+    # digest = SHA-256, parts = 2
+    e3/b0/c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
 =head1 AUTHOR
 
 Philippe Bruhat (BooK) <book@cpan.org>.
