@@ -3,7 +3,7 @@ package File::ContentStore;
 use 5.014;
 
 use Carp qw( croak );
-use Types::Standard qw( slurpy Object Str ArrayRef );
+use Types::Standard qw( slurpy Object Bool Str ArrayRef );
 use Types::Path::Tiny qw( Dir File );
 use Type::Params qw( compile );
 use Digest;
@@ -29,6 +29,13 @@ has parts => (
     builder =>
       sub { int( length( Digest->new( shift->digest )->hexdigest ) / 32 ) },
     init_arg => undef,
+);
+
+has check_for_collisions => (
+    is       => 'ro',
+    isa      => Bool,
+    required => 1,
+    default  => 1,
 );
 
 # if a single non-hashref argument is given, assume it's 'path'
@@ -64,7 +71,7 @@ sub link_file {
     $content->parent->mkpath;
 
     # check for collisions
-    if( -e $content ) {
+    if( -e $content && $self->check_for_collisions ) {
         croak "Collision found for $file and $content: size differs"
            if -s $file != -s $content;
 
@@ -230,6 +237,33 @@ For example, the empty file would be linked to:
 
     # digest = SHA-256, parts = 2
     e3/b0/c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+=head2 check_for_collisions
+
+When this boolean attribute is set to true, any time the content file
+for a file linked into the store already exists, the files will be
+compared for equality before linking them. This prevents data loss in
+case of collisions.
+(Default: true.)
+
+If a collision is detected, the solution is to upgrade the digest to a
+stronger one.
+
+    # create a MD5 store
+    my $md5_store = File::ContentStore->( path => $old, digest => 'MD5' );
+
+    # expose a collision
+    $old_store->link_file($file);    # dies
+
+    # create a new SHA-1 store
+    my $sha1_store = File::ContentStore->new( path => $new, digest => 'SHA-1' );
+
+    # link the old content to in the new store
+    # the files that were linked to the old store will be linked to the new one
+    $sha1_store->link_dir( $md5_store->path );
+    $sha1_store->link_file( $file->path );    # success!
+
+    $md5_store->path->remove_tree;            # delete the old content store
 
 =head1 METHODS
 
