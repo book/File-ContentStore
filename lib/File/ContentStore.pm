@@ -230,6 +230,12 @@ match the digest of their content.
 
 =back
 
+=head1 SEE ALSO
+
+Modules suitable for finding duplicated files:
+
+L<File::Find::Duplicates>, L<File::Same>.
+
 =head1 AUTHOR
 
 Philippe Bruhat (BooK) <book@cpan.org>.
