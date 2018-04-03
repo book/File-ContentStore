@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test::More;
 
-use Path::Tiny;
+use Path::Tiny ();
 use File::ContentStore;
 
 sub build_work_tree {
