@@ -14,4 +14,21 @@ like(
     '... with the expected error message'
 );
 
+# non-existent digest
+ok(
+    !eval {
+        File::ContentStore->new(
+            path   => Path::Tiny->tempdir,
+            digest => 'NoSuchHASH',
+        );
+        1;
+    },
+    'Fails with non-existent hash digest'
+);
+like(
+    $@,
+    qr{^Can't locate Digest/NoSuchHASH\.pm in \@INC },
+    '... with the expected error message'
+);
+
 done_testing;

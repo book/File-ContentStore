@@ -44,6 +44,10 @@ sub BUILDARGS {
       : {@_};
 }
 
+sub BUILD {
+    Digest->new( shift->digest );    # dies if 'digest' is not installed
+}
+
 my $BUFF_SIZE = 1024 * 32;
 my $DIGEST_OPTS = { chunk_size => $BUFF_SIZE };
 
