@@ -124,3 +124,43 @@ sub fsck {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+File::ContentStore - A store for file content built with hard links
+
+=head1 SYNOPSIS
+
+    use File:::ContentStore;
+
+    # the 'path' argument is expected to exist
+    my $store = File:::ContentStore->new( path => "$ENV{HOME}/.photo_content" );
+    $store->link_dir( @collection_of_photo_directories );
+
+=head1 DESCRIPTION
+
+This module manages a I<content store> as a collection of hard links
+to a set of files. The files in the content store are named after the
+digest of the content in the file.
+
+When linking a new file to the content store, a hard link is created
+to the file, named after the digest of the content. When a file which
+content is already in the store is linked in, the file is hard linked
+to the content file in the store.
+
+=head1 AUTHOR
+
+Philippe Bruhat (BooK) <book@cpan.org>.
+
+=head1 COPYRIGHT
+
+Copyright 2018 Philippe Bruhat (BooK), all rights reserved.
+
+=head1 LICENSE
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+
+=cut
