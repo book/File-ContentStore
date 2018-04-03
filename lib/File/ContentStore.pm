@@ -155,10 +155,12 @@ to the content file in the store.
 =head2 path
 
 The location of the directory where the content files are store.
+(Required.)
 
 =head2 digest
 
-The algorithm used to compute the content digest (default: C<SHA-1>).
+The algorithm used to compute the content digest.
+(Default: C<SHA-1>.)
 
 Any string that is suitable for passing to the L<Digest> module
 constructor is valid. The choice of a digest is a compromise between
@@ -182,6 +184,51 @@ For example, the empty file would be linked to:
 
     # digest = SHA-256, parts = 2
     e3/b0/c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+=head1 METHODS
+
+=head2 new
+
+Constructor. See L</ATTRIBUTES> for valid attributes.
+
+=head2 link_file
+
+    $store->link_file($file);
+
+Link a single file into the content store.
+
+=head2 link_dir
+
+    $store->link_dir(@dirs);
+
+Recursively link all the files under the given directories.
+
+=head2 fsck
+
+Runs a consistency check on the content store (i.e. the files under
+L<path>), and returns a hash reference containing all the errors found.
+If no error is found, the hash reference is empty.
+
+The types of errors found are:
+
+=over 4
+
+=item empty
+
+An array reference containing all the empty directories under L<path>.
+
+=item orphan
+
+An array references containing L<Path::Tiny> objects pointing to the
+content files with no alias (i.e. not linked to any file outside of the
+content store).
+
+=item corrupted
+
+An arrary reference of all content files for which the name does not
+match the digest of their content.
+
+=back
 
 =head1 AUTHOR
 
