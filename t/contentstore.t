@@ -34,10 +34,7 @@ git-fusion.png
 TREE
 
 # create the ContentRepo
-my $store = File::ContentStore->new(
-    path   => $dir{obj},
-    digest => 'SHA-256',
-);
+my $store = File::ContentStore->new( $dir{obj} );
 isa_ok( $store, 'File::ContentStore' );
 
 # add all files in src
@@ -65,34 +62,24 @@ is_deeply( $store->fsck, {}, 'fsck' );
 
 # fsck errors
 unlink $dir{src}->child('IMG_0025.JPG');    # orphan file
-$store->path->child( '01', '23' )->mkpath;
+$store->path->child('01')->mkpath;
 rename(                                     # corrupted + empty dir
-    $store->path->child(
-        'f7', '7a',
-        '5294e550ee91c030e4d76da836961175f33f8382e0827919530f382665d4'
-    ),
-    $store->path->child(
-        '01', '23',
-        '456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
-    )
+    $store->path->child( '2c', '37ddd32a282aba524d0b6b211125f33cf251e7', ),
+    $store->path->child( '01', '23456789abcdef0123456789abcdef01234567' )
 );
 
 is_deeply(
     $store->fsck,
     {
-        empty  => [ $store->path->child( 'f7', '7a' ) ],
+        empty  => [ $store->path->child('2c') ],
         orphan => [
             $store->path->child(
-                '10',
-                '31',
-                '525d736cbf09471f420b2ec762ac30ce50b78aa4dea3374596d2ad8906ee'
+                '63', 'b1a831fb99ba85c4d7072a47efd7b84b7f9074'
             )
         ],
         corrupted => [
             $store->path->child(
-                '01',
-                '23',
-                '456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
+                '01', '23456789abcdef0123456789abcdef01234567'
             )
         ],
     },
@@ -105,11 +92,11 @@ md5-1
 md5-2 subdir/md5-2
 TREE
 
-my $md5_store = File::ContentStore->new(
+my $md5_store = File::ContentStore->new( {
     path           => $dir{obj},
     digest         => 'MD5',
     make_read_only => '',
-);
+} );
 
 ok( !eval { $md5_store->link_dir($dir{src}); 1; }, 'link_dir failed' );
 like(
