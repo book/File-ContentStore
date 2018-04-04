@@ -141,6 +141,10 @@ sub fsck {
 
 __END__
 
+=for Pod::Coverage
+BUILD
+BUILDARGS
+
 =head1 NAME
 
 File::ContentStore - A store for file content built with hard links
