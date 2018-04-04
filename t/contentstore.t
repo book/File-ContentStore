@@ -56,6 +56,10 @@ is(
     "img-01.jpg and img-02.jpg are linked"
 );
 
+# check mode
+is( $dir{src}->child('img-01.jpg')->stat->mode & 07777,
+    0444, 'Files now read-only' );
+
 # fsck
 is_deeply( $store->fsck, {}, 'fsck' );
 
@@ -102,8 +106,9 @@ md5-2 subdir/md5-2
 TREE
 
 my $md5_store = File::ContentStore->new(
-    path   => $dir{obj},
-    digest => 'MD5',
+    path           => $dir{obj},
+    digest         => 'MD5',
+    make_read_only => '',
 );
 
 ok( !eval { $md5_store->link_dir($dir{src}); 1; }, 'link_dir failed' );
@@ -112,6 +117,9 @@ like(
     qr{^Collision found for $dir{src}/subdir/md5-2 and ${\$md5_store->path}/00/8ee33a9d58b51cfeb425b0959121c9: content differs },
     '... on an MD5 collision'
 );
+
+isnt( $dir{src}->child('md5-1')->stat->mode & 07777,
+    0444, 'Files not read-only' );
 
 $md5_store = File::ContentStore->new(
     path                 => $dir{obj},
@@ -127,5 +135,8 @@ is(
     $dir{src}->child('subdir/md5-2')->stat->ino,
     "different files linked togetther!"
 );
+is( $dir{src}->child('md5-1')->stat->mode & 07777,
+    0444, 'Files now read-only' );
+
 
 done_testing;

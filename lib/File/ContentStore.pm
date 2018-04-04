@@ -38,6 +38,13 @@ has check_for_collisions => (
     default  => 1,
 );
 
+has make_read_only => (
+    is       => 'ro',
+    isa      => Bool,
+    required => 1,
+    default  => 1,
+);
+
 # if a single non-hashref argument is given, assume it's 'path'
 sub BUILDARGS {
     my $class = shift;
@@ -90,7 +97,7 @@ sub link_file {
     return if $old eq $new;    # do not link a file to itself
     unlink $new if -e $new;
     link $old, $new or croak "Failed linking $new to to $old: $!";
-    chmod 0444, $old;
+    chmod 0444, $old if $self->make_read_only;
 
     return $content;
 }
@@ -264,6 +271,15 @@ stronger one.
     $sha1_store->link_file( $file->path );    # success!
 
     $md5_store->path->remove_tree;            # delete the old content store
+
+=head2 make_read_only
+
+When this attribute is set to a true value, a L<perlfunc/chmod> to
+read-only permissions is performed on the content files (and therefore
+the linked files, since permissions are an attribute of the inode).
+
+The default is true, to avoid unwittingly modifying linked files that
+were identical unbeknownst to the user.
 
 =head1 METHODS
 
