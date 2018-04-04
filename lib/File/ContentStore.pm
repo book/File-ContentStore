@@ -251,7 +251,8 @@ When this boolean attribute is set to true, any time the content file
 for a file linked into the store already exists, the files will be
 compared for equality before linking them. This prevents data loss in
 case of collisions.
-(Default: true.)
+
+The default is true to avoid data loss.
 
 If a collision is detected, the solution is to upgrade the digest to a
 stronger one.
