@@ -1,3 +1,6 @@
 Revision history for File-ContentStore
 
 {{$NEXT}}
+
+1.000 2018-04-06 BOOK
+    - First release of File::ContentStore
