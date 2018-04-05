@@ -3,7 +3,7 @@ package File::ContentStore;
 use 5.014;
 
 use Carp qw( croak );
-use Types::Standard qw( slurpy Object Bool Str ArrayRef );
+use Types::Standard qw( slurpy Object Bool Str ArrayRef CodeRef );
 use Types::Path::Tiny qw( Dir File );
 use Type::Params qw( compile );
 use Digest;
@@ -45,6 +45,12 @@ has make_read_only => (
     default  => 1,
 );
 
+has file_callback => (
+    is        => 'ro',
+    isa       => CodeRef,
+    predicate => 1,
+);
+
 # if a single non-hashref argument is given, assume it's 'path'
 sub BUILDARGS {
     my $class = shift;
@@ -75,7 +81,9 @@ sub link_file {
       $self->path->child(
         map( { substr $digest, 2 * $_, 2 } 0 .. $self->parts - 1 ),
         substr( $digest, 2 * $self->parts ) );
-    $content->parent->mkpath;
+
+    $self->file_callback->( $file, $digest, $content )
+       if $self->has_file_callback;
 
     # check for collisions
     if( -e $content && $self->check_for_collisions ) {
@@ -92,6 +100,7 @@ sub link_file {
     }
 
     # link both files
+    $content->parent->mkpath;
     my ( $old, $new ) = -e $content ? ( $content, $file ) : ( $file, $content );
 
     return if $old eq $new;    # do not link a file to itself
@@ -144,6 +153,7 @@ __END__
 =for Pod::Coverage
 BUILD
 BUILDARGS
+has_file_callback
 
 =head1 NAME
 
@@ -285,6 +295,23 @@ the linked files, since permissions are an attribute of the inode).
 
 The default is true, to avoid unwittingly modifying linked files that
 were identical unbeknownst to the user.
+
+=head2 file_callback
+
+This optional coderef is called by L</link_file> when linking a file into
+the store. This is useful for providing user feedback when processing
+large directories. The callback receives three arguments: the file, its
+digest and the content file (files are passed as L<Path::Tiny> objects).
+
+Usage example:
+
+    File::ContentStore->new(
+        path          => $dir,
+        file_callback => sub {
+            my ( $file, $digest, $content ) = @_;
+            print STDERR "Linking $file ($digest) to $content\n";
+        }
+    );
 
 =head1 METHODS
 

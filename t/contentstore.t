@@ -96,6 +96,8 @@ my $md5_store = File::ContentStore->new( {
     path           => $dir{obj},
     digest         => 'MD5',
     make_read_only => '',
+    file_callback  =>
+      sub { is( $_[1], '008ee33a9d58b51cfeb425b0959121c9', "@_" ) },
 } );
 
 ok( !eval { $md5_store->link_dir($dir{src}); 1; }, 'link_dir failed' );
