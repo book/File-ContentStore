@@ -360,8 +360,7 @@ match the digest of their content.
 
 =head1 SEE ALSO
 
-Modules suitable for finding duplicated files:
-
+Other modules suitable for finding duplicated files:
 L<File::Find::Duplicates>, L<File::Same>.
 
 =head1 AUTHOR
