@@ -104,7 +104,8 @@ sub link_file {
     my ( $old, $new ) = -e $content ? ( $content, $file ) : ( $file, $content );
 
     return if $old eq $new;    # do not link a file to itself
-    unlink $new if -e $new;
+    unlink $new or croak "Failed deleting $new: $!"
+      if -e $new;
     link $old, $new or croak "Failed linking $new to to $old: $!";
     chmod 0444, $old if $self->make_read_only;
 
