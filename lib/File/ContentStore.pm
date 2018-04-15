@@ -107,7 +107,9 @@ sub link_file {
     unlink $new or croak "Failed deleting $new: $!"
       if -e $new;
     link $old, $new or croak "Failed linking $new to to $old: $!";
-    chmod 0444, $old if $self->make_read_only;
+    chmod 0444, $old
+      or croak "Failed changing permissions on $old: $!"
+      if $self->make_read_only;
 
     return $content;
 }
