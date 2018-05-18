@@ -109,8 +109,7 @@ sub link_file {
     link $old, $new or croak "Failed linking $new to to $old: $!";
 
     # optionally remove the write permissions
-    chmod( ( stat $old )[2] & 07777 | 0222 ^ 0222, $old )
-      or croak "Failed changing permissions on $old: $!"
+    $old->chmod( $old->stat->mode & 07777 | 0222 ^ 0222 )
       if $self->make_read_only;
 
     return $content;

@@ -110,8 +110,8 @@ like(
 isnt( $dir{src}->child('md5-1')->stat->mode & 0222,
     0, 'File initially writable' );
 
-chmod( $dir{src}->child('md5-1')->stat->mode | 0100,
-    $dir{src}->child('md5-1') );
+$dir{src}->child('md5-1')
+  ->chmod( $dir{src}->child('md5-1')->stat->mode | 0100 );
 is( $dir{src}->child('md5-1')->stat->mode & 0100, 0100, 'File now executable' );
 
 $md5_store = File::ContentStore->new(
