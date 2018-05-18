@@ -3,7 +3,7 @@ package File::ContentStore;
 use 5.014;
 
 use Carp qw( croak );
-use Types::Standard qw( slurpy Object Bool Str ArrayRef CodeRef );
+use Types::Standard qw( slurpy Object Bool Str ArrayRef HashRef CodeRef );
 use Types::Path::Tiny qw( Dir File );
 use Type::Params qw( compile );
 use Digest;
@@ -51,6 +51,13 @@ has file_callback => (
     predicate => 1,
 );
 
+has inode => (
+    is       => 'lazy',
+    isa      => HashRef,
+    init_arg => undef,
+    builder  => sub { {} },
+);
+
 # if a single non-hashref argument is given, assume it's 'path'
 sub BUILDARGS {
     my $class = shift;
@@ -75,15 +82,29 @@ sub link_file {
     state $check = compile( Object, File );
     my ( $self, $file ) = $check->(@_);
 
+    my ( $digest, $content, $done );
+
+    # check if the file's inode is in the cache
+    if ( $content = $self->inode->{ $file->stat->ino } ) {
+        $digest  = $content =~ s{/}{}gr;
+        $content = $self->path->child($content);
+        $done    = 1;
+    }
+
     # compute content file name
-    my $digest = $file->digest( $DIGEST_OPTS, $self->digest );
-    my $content =
-      $self->path->child(
-        map( { substr $digest, 2 * $_, 2 } 0 .. $self->parts - 1 ),
-        substr( $digest, 2 * $self->parts ) );
+    else {
+        $digest = $file->digest( $DIGEST_OPTS, $self->digest );
+        $content =
+          $self->path->child(
+            map( { substr $digest, 2 * $_, 2 } 0 .. $self->parts - 1 ),
+            substr( $digest, 2 * $self->parts ) );
+    }
 
     $self->file_callback->( $file, $digest, $content )
        if $self->has_file_callback;
+
+    # if the inode is already in our store, there's nothing left to do
+    return if $done;
 
     # check for collisions
     if( -e $content && $self->check_for_collisions ) {
@@ -111,6 +132,10 @@ sub link_file {
     # optionally remove the write permissions
     $old->chmod( $old->stat->mode & 07777 | 0222 ^ 0222 )
       if $self->make_read_only;
+
+    # add the inode to the cache
+    $self->inode->{ $content->stat->ino } =
+      $content->relative( $self->path )->stringify;
 
     return $content;
 }

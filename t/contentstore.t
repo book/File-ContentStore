@@ -36,6 +36,7 @@ TREE
 # create the ContentRepo
 my $store = File::ContentStore->new( $dir{obj} );
 isa_ok( $store, 'File::ContentStore' );
+is_deeply( $store->inode, {}, 'Empty inode cache' );
 
 # add all files in src
 $store->link_dir( $dir{src} );
@@ -56,6 +57,13 @@ is(
 # check mode
 is( $dir{src}->child('img-01.jpg')->stat->mode & 00222,
     0, 'Files not writeable any more' );
+
+# check inode cache
+is(
+    $store->inode->{ $dir{src}->child('img-01.jpg')->stat->ino },
+    '2c/37ddd32a282aba524d0b6b211125f33cf251e7',
+    'inode added to the cache'
+);
 
 # fsck
 is_deeply( $store->fsck, {}, 'fsck' );
@@ -132,5 +140,26 @@ is( $dir{src}->child('md5-1')->stat->mode & 00222,
     0, 'Files not writeable any more' );
 is( $dir{src}->child('md5-1')->stat->mode & 00100,
     0100, 'Files still executable' );
+
+# check the inode cache behaviour
+%dir = build_work_tree( << 'TREE' );
+img-01.jpg
+TREE
+$store = File::ContentStore->new( $dir{obj} );
+is_deeply( $store->inode, {}, 'Empty inode cache' );
+
+my $ino = $dir{src}->child('img-01.jpg')->stat->ino;
+link( $dir{src}->child('img-01.jpg'), $dir{src}->child('img-02.jpg') );
+is( $dir{src}->child('img-02.jpg')->stat->ino,
+    $ino, "Files hard linked to $ino" );
+
+$store->link_dir( $dir{src} );
+is( $_->stat->ino, $ino, "$_ linked to inode $ino" )
+  for map $dir{src}->child("img-0$_.jpg"), 1 .. 2;
+is_deeply(
+    $store->inode,
+    { $ino => '2c/37ddd32a282aba524d0b6b211125f33cf251e7' },
+    'inode cache filled as expected'
+);
 
 done_testing;
