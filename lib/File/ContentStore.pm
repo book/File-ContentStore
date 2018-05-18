@@ -229,6 +229,11 @@ If the goal is deduplication and hard-linking of identical files, once
 all the files have been linked through the content store, the content
 store is not needed any more, and can be deleted.
 
+Note that since permissions are attached to the inode (and not the
+individual files), this implies that, when linking a file with the content
+store, it will set the initial permissions of the content file if it
+does not exist, and otherwise inherit the permissions of the content file.
+
 =head1 ATTRIBUTES
 
 =head2 path
