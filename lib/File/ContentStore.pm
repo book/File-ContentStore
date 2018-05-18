@@ -355,6 +355,7 @@ This optional coderef is called by L</link_file> when linking a file into
 the store. This is useful for providing user feedback when processing
 large directories. The callback receives three arguments: the file, its
 digest and the content file (files are passed as L<Path::Tiny> objects).
+It is run right after obtaining the file digest, before doing anything else.
 
 Usage example:
 
