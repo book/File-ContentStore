@@ -55,7 +55,26 @@ has inode => (
     is       => 'lazy',
     isa      => HashRef,
     init_arg => undef,
-    builder  => sub { {} },
+    builder  => sub {
+        my ($self) = @_;
+        my $re = qr{
+            ^
+            ${ \( '[a-f0-9][a-f0-9]/' x $self->parts ) }
+            ${ \( '[a-f0-9]'
+                  x ( length( Digest->new( $self->digest )->hexdigest )
+                      - 2 * $self->parts ) ) }
+            $
+        }x;
+        $self->path->visit(
+            sub {
+                my ( $path, $inode ) = @_;
+                my $rel = $path->relative( $self->path )->stringify;
+                $inode->{ $path->stat->ino } = $rel
+                  if -f && $rel =~ $re;
+            },
+            { recurse => 1 }
+        );
+    },
 );
 
 # if a single non-hashref argument is given, assume it's 'path'

@@ -162,4 +162,12 @@ is_deeply(
     'inode cache filled as expected'
 );
 
+# a new store on an existing content directory
+$store = File::ContentStore->new( $dir{obj} );
+is_deeply(
+    $store->inode,
+    { $ino => '2c/37ddd32a282aba524d0b6b211125f33cf251e7' },
+    'inode cache pre-filled'
+);
+
 done_testing;
