@@ -54,8 +54,8 @@ is(
 );
 
 # check mode
-is( $dir{src}->child('img-01.jpg')->stat->mode & 07777,
-    0444, 'Files now read-only' );
+is( $dir{src}->child('img-01.jpg')->stat->mode & 00222,
+    0, 'Files not writeable any more' );
 
 # fsck
 is_deeply( $store->fsck, {}, 'fsck' );
@@ -107,8 +107,12 @@ like(
     '... on an MD5 collision'
 );
 
-isnt( $dir{src}->child('md5-1')->stat->mode & 07777,
-    0444, 'Files not read-only' );
+isnt( $dir{src}->child('md5-1')->stat->mode & 0222,
+    0, 'File initially writable' );
+
+chmod( $dir{src}->child('md5-1')->stat->mode | 0100,
+    $dir{src}->child('md5-1') );
+is( $dir{src}->child('md5-1')->stat->mode & 0100, 0100, 'File now executable' );
 
 $md5_store = File::ContentStore->new(
     path                 => $dir{obj},
@@ -122,10 +126,11 @@ ok(
 is(
     $dir{src}->child('md5-1')->stat->ino,
     $dir{src}->child('subdir/md5-2')->stat->ino,
-    "different files linked togetther!"
+    "different files linked together!"
 );
-is( $dir{src}->child('md5-1')->stat->mode & 07777,
-    0444, 'Files now read-only' );
-
+is( $dir{src}->child('md5-1')->stat->mode & 00222,
+    0, 'Files not writeable any more' );
+is( $dir{src}->child('md5-1')->stat->mode & 00100,
+    0100, 'Files still executable' );
 
 done_testing;

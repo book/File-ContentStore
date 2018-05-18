@@ -107,7 +107,9 @@ sub link_file {
     unlink $new or croak "Failed deleting $new: $!"
       if -e $new;
     link $old, $new or croak "Failed linking $new to to $old: $!";
-    chmod 0444, $old
+
+    # optionally remove the write permissions
+    chmod( ( stat $old )[2] & 07777 | 0222 ^ 0222, $old )
       or croak "Failed changing permissions on $old: $!"
       if $self->make_read_only;
 
@@ -292,8 +294,8 @@ stronger one.
 
 =head2 make_read_only
 
-When this attribute is set to a true value, a L<perlfunc/chmod> to
-read-only permissions is performed on the content files (and therefore
+When this attribute is set to a true value, a L<perlfunc/chmod> to remove
+the write permissions is performed on the content files (and therefore
 the linked files, since permissions are an attribute of the inode).
 
 The default is true, to avoid unwittingly modifying linked files that
