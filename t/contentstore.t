@@ -155,9 +155,7 @@ is( $dir{src}->child('md5-1')->stat->mode & 00100,
     0100, 'Files still executable' );
 
 # check the inode cache behaviour
-%dir = build_work_tree( << 'TREE' );
-img-01.jpg
-TREE
+%dir = build_work_tree( 'img-01.jpg' );
 $store = File::ContentStore->new( $dir{obj} );
 is_deeply( $store->inode, {}, 'Empty inode cache' );
 
