@@ -149,7 +149,7 @@ sub link_file {
     return if $old eq $new;    # do not link a file to itself
     unlink $new or croak "Failed deleting $new: $!"
       if -e $new;
-    link $old, $new or croak "Failed linking $new to to $old: $!";
+    link $old, $new or croak "Failed linking $new to $old: $!";
 
     # optionally remove the write permissions
     $old->chmod( $old->stat->mode & 07777 | 0222 ^ 0222 )
@@ -413,7 +413,7 @@ content store).
 
 =item corrupted
 
-An arrary reference of all content files for which the name does not
+An array reference of all content files for which the name does not
 match the digest of their content.
 
 =item symlink
