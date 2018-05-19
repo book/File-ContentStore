@@ -147,8 +147,7 @@ sub link_file {
     my ( $old, $new ) = -e $content ? ( $content, $file ) : ( $file, $content );
 
     return if $old eq $new;    # do not link a file to itself
-    unlink $new or croak "Failed deleting $new: $!"
-      if -e $new;
+    $new->remove;
     link $old, $new or croak "Failed linking $new to $old: $!";
 
     # optionally remove the write permissions
