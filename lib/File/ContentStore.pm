@@ -347,7 +347,7 @@ stronger one.
 
 =head2 make_read_only
 
-When this attribute is set to a true value, a L<perlfunc/chmod> to remove
+When this attribute is set to a true value, a L<chmod|perlfunc/chmod> to remove
 the write permissions is performed on the content files (and therefore
 the linked files, since permissions are an attribute of the inode).
 
