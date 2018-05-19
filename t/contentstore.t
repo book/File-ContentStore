@@ -5,6 +5,8 @@ use Test::More;
 use Path::Tiny ();
 use File::ContentStore;
 
+my $CAN_SYMLINK = eval { symlink( "", "" ); 1 };
+
 sub build_work_tree {
 
     # where the data files live
@@ -75,6 +77,12 @@ rename(                                     # corrupted + empty dir
     $store->path->child( '2c', '37ddd32a282aba524d0b6b211125f33cf251e7', ),
     $store->path->child( '01', '23456789abcdef0123456789abcdef01234567' )
 );
+if ($CAN_SYMLINK) {
+    symlink(
+        $store->path->child( '01', '23456789abcdef0123456789abcdef01234567' ),
+        $store->path->child( '01', 'a7f51a27b82b640a285c6dfa7c336c7610dbf1', ),
+    );
+}
 
 is_deeply(
     $store->fsck,
@@ -90,6 +98,11 @@ is_deeply(
                 '01', '23456789abcdef0123456789abcdef01234567'
             )
         ],
+      ( symlink => [
+            $store->path->child(
+                '01', 'a7f51a27b82b640a285c6dfa7c336c7610dbf1'
+            ),
+        ] )x!! $CAN_SYMLINK,
     },
     'fsck, 1 empty, 1 orphan, 1 corrupted'
 );
@@ -171,7 +184,7 @@ is_deeply(
 );
 
 # a symlink test (on systems that support them)
-if ( eval { symlink( "", "" ); 1 } ) {
+if ($CAN_SYMLINK) {
     %dir = build_work_tree('img-01.jpg');
     symlink( $dir{src}->child('img-01.jpg'), $dir{src}->child('img-02.jpg') );
     symlink( $dir{src}->child('empty'),      $dir{src}->child('null') );

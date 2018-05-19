@@ -181,6 +181,9 @@ sub fsck {
                 # empty directory
                 push @{ $state->{empty} }, $path unless $path->children;
             }
+            elsif( -l $path ) {
+                push @{ $state->{symlink} }, $path;
+            }
             else {
 
                 # orphan content file
@@ -412,6 +415,10 @@ content store).
 
 An arrary reference of all content files for which the name does not
 match the digest of their content.
+
+=item symlink
+
+An array reference of all symbolic links under L<path>.
 
 =back
 
