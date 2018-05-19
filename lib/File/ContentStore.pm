@@ -101,6 +101,9 @@ sub link_file {
     state $check = compile( Object, File );
     my ( $self, $file ) = $check->(@_);
 
+    # skip non-files and symbolic links
+    return unless -f $file && !-l $file;
+
     my ( $digest, $content, $done );
 
     # check if the file's inode is in the cache

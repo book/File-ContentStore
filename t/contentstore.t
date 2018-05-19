@@ -170,4 +170,19 @@ is_deeply(
     'inode cache pre-filled'
 );
 
+# a symlink test (on systems that support them)
+if ( eval { symlink( "", "" ); 1 } ) {
+    %dir = build_work_tree('img-01.jpg');
+    symlink( $dir{src}->child('img-01.jpg'), $dir{src}->child('img-02.jpg') );
+    symlink( $dir{src}->child('empty'),      $dir{src}->child('null') );
+    symlink( $dir{src}->child('null'),       $dir{src}->child('zero') );
+    link( $dir{src}->child('null'), $dir{src}->child('nil') );
+    $dir{src}->child('empty')->touch;
+
+    $store = File::ContentStore->new( $dir{obj} );
+    $store->link_dir( $dir{src} );
+    ok( !-l, "$_ is not a symlink" )
+      for map $dir{obj}->child($_), values %{ $store->inode };
+}
+
 done_testing;
