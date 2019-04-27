@@ -2,6 +2,9 @@ Revision history for File-ContentStore
 
 {{$NEXT}}
 
+1.003 2019-04-27 BOOK
+    - Produce a NA test report if perl doesn't have link()
+
 1.002 2019-02-28 BOOK
     - Add minimum version requirement for Moo
     - Fix keywords in META files
