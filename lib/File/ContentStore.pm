@@ -214,10 +214,10 @@ File::ContentStore - A store for file content built with hard links
 
 =head1 SYNOPSIS
 
-    use File:::ContentStore;
+    use File::ContentStore;
 
     # the 'path' argument is expected to exist
-    my $store = File:::ContentStore->new( path => "$ENV{HOME}/.photo_content" );
+    my $store = File::ContentStore->new( path => "$ENV{HOME}/.photo_content" );
     $store->link_dir( @collection_of_photo_directories );
 
 =head1 DESCRIPTION
