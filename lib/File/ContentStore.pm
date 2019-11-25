@@ -286,7 +286,7 @@ does not exist, and otherwise inherit the permissions of the content file.
 
 =head2 path
 
-The location of the directory where the content files are store.
+The location of the directory where the content files are stored.
 (Required.)
 
 =head2 digest
