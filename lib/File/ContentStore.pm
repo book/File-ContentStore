@@ -246,7 +246,7 @@ After linking F<file1> into the content store, we have the following:
     Directory                Content store
     ---------                -------------
     [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
-    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+    [456789] file2
     [789012] file3
 
 After linking F<file2>:
