@@ -27,7 +27,7 @@ has digest => (
 );
 
 has parts => (
-    is => 'lazy',
+    is      => 'lazy',
     builder =>
       sub { int( length( Digest->new( shift->digest )->hexdigest ) / 32 ) },
     init_arg => undef,
@@ -123,7 +123,7 @@ sub link_file ( $self, $file ) {
 
     my ( $digest, $content, $done );
 
-    # check if the file's inode is in the cache
+    # check if the file's inode is in the cache already
     if ( $content = $self->inode->{ $file->stat->ino } ) {
         $digest  = $content =~ s{/}{}gr;
         $content = $self->path->child($content);
@@ -241,7 +241,7 @@ digest of the content in the file.
 
 When linking a new file to the content store, a hard link is created
 to the file, named after the digest of the content. When a file which
-content is already in the store is linked in, the file is hard linked
+content already exists in the store is linked in, the file is hard linked
 to the content file in the store.
 
 =head2 Example and detailed operation
@@ -289,6 +289,14 @@ are linked through the content store.
 If the goal is deduplication and hard-linking of identical files, once
 all the files have been linked through the content store, the content
 store is not needed any more, and can be deleted.
+
+For longer term incremental deduplication, the store can be retained as
+new files are linked into it. The only extra cost in space comes when
+files are deleted from the directories linked into the store.  To remove
+the now unneeded content files, one can run the following shell command
+from the store's root directory:
+
+    find . -type f -links 1 -delete
 
 Note that since permissions are attached to the inode (and not the
 individual files), this implies that, when linking a file with the content
