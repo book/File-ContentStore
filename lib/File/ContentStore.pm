@@ -4,8 +4,8 @@ use 5.020;
 use warnings;
 use experimental 'signatures';
 
-use Carp qw( croak );
-use Types::Standard qw( slurpy Object Bool Str ArrayRef HashRef CodeRef );
+use Carp qw( carp croak );
+use Types::Standard qw( slurpy Object Bool Int Str ArrayRef HashRef CodeRef );
 use Types::Path::Tiny qw( Dir File );
 use Type::Params qw( signature_for );
 use Digest;
@@ -77,6 +77,13 @@ has inode => (
     },
 );
 
+has dev => (
+    is       => 'lazy',
+    isa      => Int,
+    init_arg => undef,
+    builder  => sub ($self) { $self->path->stat->dev },
+);
+
 # if a single non-hashref argument is given, assume it's 'path'
 sub BUILDARGS {
     my $class = shift;
@@ -104,6 +111,15 @@ sub link_file ( $self, $file ) {
 
     # skip non-files and symbolic links
     return unless -f $file && !-l $file;
+
+    # skip files on a different filesystem than the store
+    if ( $file->stat->dev != $self->dev ) {
+        local our @CARP_NOT = qw( Path::Tiny );
+        carp sprintf
+          "%s (%d) and %s (%d) are on different devices. Skipping",
+          $file, $file->stat->dev, $self->path, $self->dev;
+        return;
+    }
 
     my ( $digest, $content, $done );
 
@@ -285,6 +301,13 @@ does not exist, and otherwise inherit the permissions of the content file.
 
 The location of the directory where the content files are stored.
 (Required.)
+
+=head2 dev
+
+The device number of the filesystem holding the L</path>.
+
+This is used internally to avoid trying to link files from a different
+device into the content store.
 
 =head2 digest
 
