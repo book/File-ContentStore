@@ -234,7 +234,7 @@ to the content file in the store.
 For a more complete definition of a hard link, see
 L<https://en.wikipedia.org/wiki/Hard_link>.
 
-Assuming we have directory containing the following files: F<file1>
+Assuming we have a directory containing the following files: F<file1>
 (inode 123456), F<file2> (inode 456789) and F<file3> (inode 789012,
 content identical to F<file1>). In the examples below, files are
 sorted by inode.
@@ -243,7 +243,7 @@ After linking F<file1> into the content store, we have the following:
 
     Directory                Content store
     ---------                -------------
-    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
+    [123456] file1           [123456] d4/1d8cd98f00b279d1c00998ecf8427e
     [456789] file2
     [789012] file3
 
@@ -251,17 +251,17 @@ After linking F<file2>:
 
     Directory                Content store
     ---------                -------------
-    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
-    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+    [123456] file1           [123456] d4/1d8cd98f00b279d1c00998ecf8427e
+    [456789] file2           [456789] 8a/8052e7a4f99c54b966a74144fe5761
     [789012] file3
 
 And finally, after linking F<file3>, we have this:
 
     Directory                Content store
     ---------                -------------
-    [123456] file1           [123456] d4/1d/8cd98f00b279d1c00998ecf8427e
+    [123456] file1           [123456] d4/1d8cd98f00b279d1c00998ecf8427e
     [123456] file3
-    [456789] file2           [456789] 8a/80/52e7a4f99c54b966a74144fe5761
+    [456789] file2           [456789] 8a/8052e7a4f99c54b966a74144fe5761
 
 i.e. the inode that was holding the content of F<file3> is lost, and the
 name now points to the same inode as F<file1> and its content file.
@@ -314,6 +314,9 @@ For example, the empty file would be linked to:
 
     # digest = SHA-256, parts = 2
     e3/b0/c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+    # digest = SHA-256, parts = 4
+    cf/83/e1/35/7eefb8bdf1542850d66d8007d620e4050b5715dc83f4a921d36ce9ce47d0d13c5d85f2b0ff8318d2877eec2f63b931bd47417a81a538327af927da3e
 
 =head2 check_for_collisions
 
