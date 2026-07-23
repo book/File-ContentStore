@@ -43,7 +43,6 @@ has check_for_collisions => (
 has make_read_only => (
     is       => 'ro',
     isa      => Bool,
-    required => 1,
     default  => 1,
 );
 
