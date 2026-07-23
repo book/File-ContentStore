@@ -65,10 +65,11 @@ has inode => (
                       - 2 * $self->parts ) ) }
             $
         }x;
-        $self->path->visit(
+        my $root = $self->path;
+        $root->visit(
             sub {
                 my ( $path, $inode ) = @_;
-                my $rel = $path->relative( $self->path )->stringify;
+                my $rel = $path->relative($root)->stringify;
                 $inode->{ $path->stat->ino } = $rel
                   if -f && $rel =~ $re;
             },
@@ -112,12 +113,14 @@ sub link_file ( $self, $file ) {
     # skip non-files and symbolic links
     return unless -f $file && !-l $file;
 
+    my $root = $self->path;
+
     # skip files on a different filesystem than the store
     if ( $file->stat->dev != $self->dev ) {
         local our @CARP_NOT = qw( Path::Tiny );
         carp sprintf
           "%s (%d) and %s (%d) are on different devices. Skipping",
-          $file, $file->stat->dev, $self->path, $self->dev;
+          $file, $file->stat->dev, $root, $self->dev;
         return;
     }
 
@@ -126,7 +129,7 @@ sub link_file ( $self, $file ) {
     # check if the file's inode is in the cache already
     if ( $content = $self->inode->{ $file->stat->ino } ) {
         $digest  = $content =~ s{/}{}gr;
-        $content = $self->path->child($content);
+        $content = $root->child($content);
         $done    = 1;
     }
 
@@ -134,7 +137,7 @@ sub link_file ( $self, $file ) {
     else {
         $digest = $file->digest( $DIGEST_OPTS, $self->digest );
         $content =
-          $self->path->child(
+          $root->child(
             map( { substr $digest, 2 * $_, 2 } 0 .. $self->parts - 1 ),
             substr( $digest, 2 * $self->parts ) );
     }
@@ -173,7 +176,7 @@ sub link_file ( $self, $file ) {
 
     # add the inode to the cache
     $self->inode->{ $content->stat->ino } =
-      $content->relative( $self->path )->stringify;
+      $content->relative($root)->stringify;
 
     return $content;
 }
@@ -184,7 +187,8 @@ sub link_dir ( $self, $dirs ) {
 }
 
 sub fsck ($self) {
-    $self->path->visit(
+    my $root = $self->path;
+    $root->visit(
         sub {
             my ( $path, $state ) = @_;
 
@@ -193,7 +197,7 @@ sub fsck ($self) {
                 # empty directory
                 push @{ $state->{empty} }, $path unless $path->children;
             }
-            elsif( -l $path ) {
+            elsif ( -l $path ) {
                 push @{ $state->{symlink} }, $path;
             }
             else {
@@ -205,7 +209,7 @@ sub fsck ($self) {
                 # content does not match name
                 my $digest = $path->digest( $DIGEST_OPTS, $self->digest );
                 push @{ $state->{corrupted} }, $path
-                  if $digest ne $path->relative( $self->path ) =~ s{/}{}gr;
+                  if $digest ne $path->relative($root) =~ s{/}{}gr;
             }
         },
         { recurse => 1 },
