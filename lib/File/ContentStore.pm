@@ -1,11 +1,13 @@
 package File::ContentStore;
 
-use 5.014;
+use 5.020;
+use warnings;
+use experimental 'signatures';
 
 use Carp qw( croak );
 use Types::Standard qw( slurpy Object Bool Str ArrayRef HashRef CodeRef );
 use Types::Path::Tiny qw( Dir File );
-use Type::Params qw( compile );
+use Type::Params qw( signature_for );
 use Digest;
 
 use Moo;
@@ -55,8 +57,7 @@ has inode => (
     is       => 'lazy',
     isa      => HashRef,
     init_arg => undef,
-    builder  => sub {
-        my ($self) = @_;
+    builder  => sub ($self) {
         my $re = qr{
             ^
             ${ \( '[a-f0-9][a-f0-9]/' x $self->parts ) }
@@ -97,9 +98,10 @@ sub BUILD {
 my $BUFF_SIZE = 1024 * 32;
 my $DIGEST_OPTS = { chunk_size => $BUFF_SIZE };
 
-sub link_file {
-    state $check = compile( Object, File );
-    my ( $self, $file ) = $check->(@_);
+signature_for link_file => ( positional => [ Object, File ] );
+signature_for link_dir  => ( positional => [ Object, slurpy ArrayRef [Dir] ] );
+
+sub link_file ( $self, $file ) {
 
     # skip non-files and symbolic links
     return unless -f $file && !-l $file;
@@ -161,16 +163,12 @@ sub link_file {
     return $content;
 }
 
-sub link_dir {
-    state $check = compile( Object, slurpy ArrayRef[Dir] );
-    my ( $self, $dirs ) = $check->(@_);
-
+sub link_dir ( $self, $dirs ) {
     $_->visit( sub { $self->link_file($_) if -f }, { recurse => 1 } )
       for @$dirs;
 }
 
-sub fsck {
-    my ($self) = @_;
+sub fsck ($self) {
     $self->path->visit(
         sub {
             my ( $path, $state ) = @_;
